@@ -1,10 +1,17 @@
 import pytest
-from httpx import AsyncClient
-from app.main import app
+from fastapi.testclient import TestClient
+from myapp.main import app
 
-@pytest.mark.asyncio
-async def test_get_contact():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get("/contacts/1")
-        assert response.status_code == 200
-        assert response.json()["id"] == 1
+client = TestClient(app)
+
+def test_get_quotes():
+    response = client.get("/quotes/")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+def test_create_quote():
+    new_quote = {"text": "New Quote", "author": "Test Author"}
+    response = client.post("/quotes/", json=new_quote)
+    assert response.status_code == 201
+    assert response.json()["text"] == "New Quote"
+
